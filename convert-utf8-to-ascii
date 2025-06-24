@@ -1,0 +1,30 @@
+#!/usr/bin/env python3
+import sys
+from contextlib import suppress
+from pathlib import Path
+from string import printable
+
+TRANSLATION_TABLE = {
+    **dict(zip("абвгдеёжзийклмнопрстуфхцчшщьъыэюя", "abvgdeejzijklmnoprstufhchssjjiaua")),
+    **dict(zip("АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЬЪЫЭЮЯ", "ABVGDEEJZIJKLMNOPRSTUFHCHSSJJIAUA")),
+}
+SOURCE_SUFFIXES: set[str] = {".txt"}
+SUFFIX: str = ".ascii"
+
+
+def convert(text: str) -> str:
+    lines = [
+        "".join(char if char in printable else TRANSLATION_TABLE.get(char, f"u{ord(char):04}") for char in line)
+        for line in text.splitlines()
+    ]
+    return "".join(line + "\n" for line in lines)
+
+
+def main(script_name: str, *script_args: str):
+    for arg in script_args:
+        print(convert(Path(arg).read_text()))
+
+
+if __name__ == "__main__":
+    with suppress(KeyboardInterrupt):
+        main(sys.argv[0], *sys.argv[1:])
