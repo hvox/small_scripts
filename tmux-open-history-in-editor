@@ -1,5 +1,5 @@
 #!/bin/sh -e
 
 file=$(mktemp /tmp/tmp.XXXXXXXXXXXX.sh)
-tmux capture-pane -pS -256 > $file
+tmux capture-pane -pS -256 > "$file"
 tmux new-window -n:history "$EDITOR '+ normal G $' $file && rm $file"
