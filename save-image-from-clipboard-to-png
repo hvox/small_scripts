@@ -9,7 +9,7 @@ Options:
 
 
 if [ $# != 0 ]; then
-	script_name=$(basename $0)
+	script_name=$(basename "$0")
 	printf "%s" "$help_screen" | sed "s/{script}/$script_name/g"
 	( [ "$1" = "-h" ] || [ "$1" = "--help" ] ) && exit 0 || exit 1
 fi
