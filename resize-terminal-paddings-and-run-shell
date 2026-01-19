@@ -4,8 +4,8 @@
 	window=$WINDOWID
 	# TODO: fallback to activewindow
 	# window=$(xdotool getactivewindow)
-	width=$(xdotool getwindowgeometry --shell $window | sed -n 4p | cut -d= -f2)
-	height=$(xdotool getwindowgeometry --shell $window | sed -n 5p | cut -d= -f2)
+	width=$(xdotool getwindowgeometry --shell "$window" | sed -n 4p | cut -d= -f2)
+	height=$(xdotool getwindowgeometry --shell "$window" | sed -n 5p | cut -d= -f2)
 	# { columns: 128, rows: 36 } -> { width: 1026, height: 506 }
 	# w = 8 * cols + 2
 	# h = 14 * rows + 2
@@ -16,7 +16,7 @@
 		# echo "window_id = $window"
 		# echo "width:  $width -> $w"
 		# echo "height: $height -> $h"
-		xdotool windowsize $window $w $h
+		xdotool windowsize "$window" $w $h
 	done
 }&
 
