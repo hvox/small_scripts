@@ -1,0 +1,67 @@
+#!/usr/bin/env python3
+import openpyxl
+from pathlib import Path
+import sys
+
+
+def main(xlsx_path: Path, tsv_path: Path | None = None):
+    if tsv_path is None:
+        tsv_path = xlsx_path.with_suffix(".tsv")
+    workbook = openpyxl.open(xlsx_path, data_only=True, keep_links=False)
+    sheets = workbook.sheetnames
+    if len(sheets) <= 1:
+        export_sheet_to_tsv(workbook, sheets[0], tsv_path)
+        return
+    for sheet in sheets:
+        path = tsv_path.with_stem(tsv_path.stem + f"-{sheet}")
+        export_sheet_to_tsv(workbook, sheet, path)
+
+
+def export_sheet_to_tsv(wb: openpyxl.Workbook, sheet_title: str, path: Path):
+    sheet = wb[sheet_title]
+    data = []
+    for i in range(sheet.min_row, sheet.max_row + 1):
+        cols = range(sheet.min_column, sheet.max_column + 1)
+        row = [sheet.cell(i, j).value for j in cols]
+        data.append(row)
+    for x in sheet.merged_cells:
+        min_row = x.min_row - sheet.min_row
+        max_row = x.max_row - sheet.min_row
+        min_column = x.min_col - sheet.min_column
+        max_column = x.max_col - sheet.min_column
+        for i in range(min_row, max_row + 1):
+            for j in range(min_column, max_column + 1):
+                data[i][j] = data[min_row][min_column]
+    tsv = "".join("\t".join(map(tsv_escape, row)) + "\n" for row in data)
+    path.write_text(tsv, encoding="utf-8")
+
+
+ESCAPE_SEQUENCES: dict[str, str] = {"\t": r"\t", "\n": r"\n", "\r": r"\r", "\\": r"\\"}
+UNESCAPE = {seq[1]: char for char, seq in ESCAPE_SEQUENCES.items()}
+
+
+def tsv_escape(obj: object) -> str:
+    if obj is None:
+        return ""
+    return "".join(ESCAPE_SEQUENCES.get(ch, ch) for ch in str(obj))
+
+
+def tsv_unescape(escaped_string: str) -> str:
+    chars = iter(escaped_string)
+    return "".join(UNESCAPE[next(chars)] if ch == "\\" else ch for ch in chars)
+
+
+def test_escape():
+    escaped = tsv_escape("lkjasdfo\rkldsfja\n23 jfsdaf\\lksdjf\tdklsfj \r\n")
+    expected = r"lkjasdfo\rkldsfja\n23 jfsdaf\\lksdjf\tdklsfj \r\n"
+    assert expected == escaped
+
+
+def test_unescape():
+    string = "lkjasdfo\rkldsfja\n23 jfsdaf\\lksdjf\tdklsfj \r\n"
+    escaped = tsv_escape(string)
+    assert string == tsv_unescape(escaped)
+
+
+if __name__ == "__main__":
+    main(*map(Path, sys.argv[1:]))
