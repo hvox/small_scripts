@@ -1,0 +1,57 @@
+#!/usr/bin/env python3
+"""
+Scan list of items, their amounts and cost.
+Calculate and print total cost.
+
+Usage: {script} [options] [PATH]
+
+Arguments:
+    PATH - Path to the file to be scanned.
+
+Options:
+    -h, --help
+        Show this screen and exit.
+"""
+import sys
+from contextlib import suppress
+from pathlib import Path
+from decimal import Decimal
+
+
+def main(script_name: str, *script_args: str):
+    doc = __doc__.format(script=Path(script_name).name)
+    args = __import__("docopt").docopt(doc, script_args)
+    if path := args["PATH"]:
+        path = Path(path)
+        lines = path.read_text().splitlines()
+    else:
+        lines = sys.stdin.readlines()
+    total = Decimal()
+    for i, line in enumerate(lines):
+        if line.startswith("Total:"):
+            continue
+        words = list(line.split())
+        match words:
+            case *_, x, "*", y:
+                z = Decimal(x) * Decimal(y)
+                total += z
+                lines[i] = lines[i].rstrip() + f" = {z}"
+            case *_, x, "*", y, "=":
+                z = Decimal(x) * Decimal(y)
+                total += z
+                lines[i] = lines[i].rstrip() + f" {z}"
+            case *_, x, "*", y, "=", _:
+                z = Decimal(x) * Decimal(y)
+                total += z
+                lines[i] = lines[i][: lines[i].rfind("=")] + f"= {z}"
+    lines.append(f"Total: {total}")
+    if args["PATH"] and False:
+        pass  # TODO
+    else:
+        for line in lines:
+            print(line.rstrip())
+
+
+if __name__ == "__main__":
+    with suppress(KeyboardInterrupt):
+        main(sys.argv[0], *sys.argv[1:])
