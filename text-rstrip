@@ -4,12 +4,15 @@ from pathlib import Path
 from sys import argv
 
 
-def rstrip(path):
-    path = Path(path)
+def rstrip(path_str: str | Path):
+    path = Path(path_str)
     if path.is_file():
         try:
             text = path.read_text().split("\n")
-            path.write_text("\n".join(line.rstrip() for line in text))
+            path.write_text(
+                data="\n".join(line.rstrip() for line in text),
+                encoding="utf8",
+            )
         except UnicodeDecodeError:
             print(f"{path} is not a plain text file.")
     else:
