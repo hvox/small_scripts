@@ -46,8 +46,8 @@ print(f"16×9 subwindow = {16 * w16x9} × {9 * w16x9}")
 if color := get_background_color(timeout=0.1):
     red, green, blue = color
     print("Current background color:")
-    print(f"  red   = {red   / 65535:.5f} ≈ {red   // 256:3} / 255")
+    print(f"  red   = {red / 65535:.5f} ≈ {red // 256:3} / 255")
     print(f"  green = {green / 65535:.5f} ≈ {green // 256:3} / 255")
-    print(f"  blue  = {blue  / 65535:.5f} ≈ {blue  // 256:3} / 255")
+    print(f"  blue  = {blue / 65535:.5f} ≈ {blue // 256:3} / 255")
 else:
     print("P.S. Fail to get background color!")

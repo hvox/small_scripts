@@ -15,6 +15,7 @@ Options:
     -h, --help
         Show this screen and exit.
 """
+
 import sys
 from functools import reduce
 from contextlib import suppress
@@ -23,7 +24,28 @@ import PIL.Image
 from tilesets import BlobTileset
 # https://www.reddit.com/r/godot/comments/tpfrh3/you_only_need_13_tile_parts_build_a_3x3_minimal/
 
-MINIBLOB_TILES = [0, 16, 24, 8, 127, 64, 208, 248, 104, 251, 66, 214, 255, 107, 223, 2, 22, 31, 11, 254]
+MINIBLOB_TILES = [
+    0,
+    16,
+    24,
+    8,
+    127,
+    64,
+    208,
+    248,
+    104,
+    251,
+    66,
+    214,
+    255,
+    107,
+    223,
+    2,
+    22,
+    31,
+    11,
+    254,
+]
 BLOB_TILES = [
     *[0, 2, 8, 10, 11, 16, 18, 22, 24, 26, 27, 30, 31, 64, 66, 72, 74, 75, 80],
     *[82, 86, 88, 90, 91, 94, 95, 104, 106, 107, 120, 122, 123, 126, 127, 208],

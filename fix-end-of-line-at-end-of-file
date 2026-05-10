@@ -13,6 +13,7 @@ Options:
    -h, --help   Show this screen and exit.
    --verbose    Raise verbosity level.
 """
+
 import sys
 from contextlib import suppress
 from pathlib import Path

@@ -24,9 +24,7 @@ def rstrip(path):
         try:
             notebook = json.loads(path.read_text())
             strip_notebook(notebook, numerate_cells=False)
-            path.write_text(
-                json.dumps(notebook, indent=1, ensure_ascii=False) + "\n"
-            )
+            path.write_text(json.dumps(notebook, indent=1, ensure_ascii=False) + "\n")
         except UnicodeDecodeError as e:
             print(f"{path} is not a plain text file.")
     elif path.is_dir():
@@ -35,4 +33,4 @@ def rstrip(path):
 
 
 for path in argv[1:]:
-   rstrip(path)
+    rstrip(path)

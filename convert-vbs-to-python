@@ -149,7 +149,9 @@ def translate_expr(tokens: list[str]) -> str:
         (
             translate_name(token)
             if all(ch in IDENTIFIER_CHARS for ch in token)
-            else OPERATORS[token] if token in OPERATORS else token
+            else OPERATORS[token]
+            if token in OPERATORS
+            else token
         )
         for token in tokens
     )

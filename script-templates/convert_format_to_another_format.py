@@ -15,6 +15,7 @@ Options:
     -h, --help
         Show this screen and exit.
 """
+
 import sys
 from contextlib import suppress
 from pathlib import Path

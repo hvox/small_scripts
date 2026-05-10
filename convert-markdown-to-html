@@ -13,6 +13,7 @@ Options:
    -h, --help   Show this screen and exit.
    --verbose    Raise verbosity level.
 """
+
 import sys
 from pathlib import Path
 from typing import Any, Callable
@@ -21,7 +22,9 @@ debug: Callable[..., None]
 noop: Any = lambda *args, **kwargs: None
 
 SPECIAL_CHARACTERS = {"&": "amp", "<": "lt", ">": "gt"}
-TRANSLATION_TABLE = {ord(char): f"&{code};" for char, code in SPECIAL_CHARACTERS.items()}
+TRANSLATION_TABLE = {
+    ord(char): f"&{code};" for char, code in SPECIAL_CHARACTERS.items()
+}
 
 
 def text(text: str):

@@ -11,6 +11,7 @@ Options:
     -h, --help
         Show this screen and exit.
 """
+
 import os
 import sys
 from contextlib import suppress
@@ -42,7 +43,10 @@ def python(line: str, lines):
         case "def", thing:
             projects = Path(os.getenv("GIT_PROJECTS_DIR") or "~/Documents/Projects")
             lib = projects / "learn_python_once_again/my_personal_snippet_library"
-            fs = {str(function.with_suffix("").stem): function for function in lib.iterdir()}
+            fs = {
+                str(function.with_suffix("").stem): function
+                for function in lib.iterdir()
+            }
             if thing not in fs:
                 print(line)
                 for f in fs:
@@ -56,7 +60,7 @@ def python(line: str, lines):
                 source.pop()
             yield "\n".join(source) + "\n\n"
         case "pass", "#", *_:
-            yield line[line.index("#") + 1:].lstrip()
+            yield line[line.index("#") + 1 :].lstrip()
         case "#", *_:
             yield line.removeprefix("# ")
         case _:
@@ -88,7 +92,11 @@ def cpp(line: str, lines):
                 types = ["T"]
             for typ in types:
                 typ = typ.rstrip(",;").strip()
-                yield "ostream &operator<<(std::ostream &out, const vector<" + typ + "> &vec) {"
+                yield (
+                    "ostream &operator<<(std::ostream &out, const vector<"
+                    + typ
+                    + "> &vec) {"
+                )
                 yield "\tfor (int i = 0; i < vec.size(); i++)"
                 yield '\t\tout << (i != 0 ? ", " : "{") << vec[i];'
                 yield '\treturn out << "}";'
@@ -99,7 +107,9 @@ def cpp(line: str, lines):
                 types = ["T"]
             for typ in types:
                 typ = typ.rstrip(",;").strip()
-                yield "istream &operator>>(std::istream &in, vector<" + typ + "> &vec) {"
+                yield (
+                    "istream &operator>>(std::istream &in, vector<" + typ + "> &vec) {"
+                )
                 yield "\tfor (int i = 0; i < vec.size(); i++)"
                 yield "\t\tin >> vec[i];"
                 yield "\treturn in;"
@@ -215,7 +225,11 @@ def parse(source: str, parentheses: str = "()[]<>"):
             while tokens and tokens[-1] != parentheses[2 * i]:
                 children.append(tokens.pop())
             tokens.pop()
-            node = [tokens.pop(), parentheses[2 * i]] + list(reversed(children)) + [closings[i]]
+            node = (
+                [tokens.pop(), parentheses[2 * i]]
+                + list(reversed(children))
+                + [closings[i]]
+            )
             tokens.append(node)
     return tokens
 

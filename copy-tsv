@@ -11,6 +11,7 @@ Options:
 Arguments:
     PATH        Path to the TSV file. If omitted, stdin will be used.
 """
+
 import sys
 from base64 import b64encode
 from pathlib import Path

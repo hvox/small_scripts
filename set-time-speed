@@ -8,6 +8,7 @@ Arguments:
     SPEED - Desired speed of time
 
 """
+
 import sys
 from contextlib import suppress
 from pathlib import Path

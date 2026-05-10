@@ -12,6 +12,7 @@ Options:
     -h, --help
         Show this screen and exit.
 """
+
 import sys
 from contextlib import suppress
 from pathlib import Path
@@ -29,7 +30,7 @@ def main(script_name: str, *script_args: str):
         if level % 10 == 0:
             required_xp_for_next_level += 100
     print(f"Level: {level}")
-    print(f"{required_xp_for_next_level-xp} XP to reach Level {level+1}")
+    print(f"{required_xp_for_next_level - xp} XP to reach Level {level + 1}")
 
 
 if __name__ == "__main__":

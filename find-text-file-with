@@ -19,6 +19,7 @@ Options:
     -z, --zero-terminated
         Output is terminated by NUL rather than EOL.
 """
+
 import sys
 from contextlib import suppress
 from pathlib import Path

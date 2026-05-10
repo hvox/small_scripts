@@ -15,6 +15,7 @@ Options:
     -h, --help
         Show this screen and exit.
 """
+
 import sys
 from contextlib import suppress
 from pathlib import Path
@@ -27,6 +28,7 @@ SUFFIX: str = ".pbm"
 def convert(source_path: Path, target_path: Path):
     from pathlib import Path
     from PIL import Image
+
     ASCII_BITS = "10"
     imagepath = Path(source_path)
 
@@ -36,7 +38,7 @@ def convert(source_path: Path, target_path: Path):
     # Convert image data to a list of ASCII bits.
     data = [ASCII_BITS[bool(val)] for val in img.getdata()]
     # Convert that to 2D list (list of character lists)
-    data = [data[offset: offset + width] for offset in range(0, width * height, width)]
+    data = [data[offset : offset + width] for offset in range(0, width * height, width)]
 
     with target_path.open("w") as file:
         file.write("P1\n")

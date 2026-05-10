@@ -14,6 +14,7 @@ Options:
     --verbose
         Raise verbosity level.
 """
+
 import os
 import sys
 import ast
@@ -30,7 +31,12 @@ def unpack(monolith_path: Path):
     lines_iter = iter(list(monolith_path.read_text().splitlines()))
     for line in lines_iter:
         lines.append(line)
-        if not line.strip() or line.startswith("#") or line.startswith("import ") or line.startswith("from "):
+        if (
+            not line.strip()
+            or line.startswith("#")
+            or line.startswith("import ")
+            or line.startswith("from ")
+        ):
             continue
         if line == '"""' or line == "'''":
             for next_line in lines_iter:
@@ -60,7 +66,9 @@ def unpack(monolith_path: Path):
         name = name.replace("_", "-")
         debug(f"Separating {variable} into {name}.{extension}")
         source_path = ".d/" + name + "." + extension
-        lines[-len(inlined_text) - 2:] = [f"{variable} = Path(__file__ + {source_path!r}).read_text()"]
+        lines[-len(inlined_text) - 2 :] = [
+            f"{variable} = Path(__file__ + {source_path!r}).read_text()"
+        ]
         Path(str(monolith_path) + source_path).write_text("".join(inlined_text))
     lines.extend(lines_iter)
     monolith_path.write_text("".join(line + "\n" for line in lines))

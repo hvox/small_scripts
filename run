@@ -21,18 +21,45 @@ SUFFIXES = {
     "clj": lambda path, args: run(["clojure", path] + args),
     "py": lambda path, args: run(["pypy3.10", path] + args),
     "rb": lambda path, args: run(["ruby", path] + args),
-    "rs": lambda path, args: run(["rustc", "-C", "opt-level=3", "-o", path.with_suffix(""), "--", path]) and
-                             run([path.with_suffix("")] + args),
+    "rs": lambda path, args: (
+        run(["rustc", "-C", "opt-level=3", "-o", path.with_suffix(""), "--", path])
+        and run([path.with_suffix("")] + args)
+    ),
     "js": lambda path, args: run(["node", path] + args),
-    "cpp": lambda path, args: run(["g++", "-Ofast", "-o", path.with_suffix(""), path, "-lSDL2", "-lSDL2_image"]) and
-                              run([path.with_suffix("")] + args),
-    "c": lambda path, args: run(["gcc", "-Ofast", "-o", path.with_suffix(""), path, "-lSDL2", "-lSDL2_image"]) and
-                            run([path.with_suffix("")] + args),
+    "cpp": lambda path, args: (
+        run(
+            [
+                "g++",
+                "-Ofast",
+                "-o",
+                path.with_suffix(""),
+                path,
+                "-lSDL2",
+                "-lSDL2_image",
+            ]
+        )
+        and run([path.with_suffix("")] + args)
+    ),
+    "c": lambda path, args: (
+        run(
+            [
+                "gcc",
+                "-Ofast",
+                "-o",
+                path.with_suffix(""),
+                path,
+                "-lSDL2",
+                "-lSDL2_image",
+            ]
+        )
+        and run([path.with_suffix("")] + args)
+    ),
     "cr": lambda path, args: run(["crystal", path]),
-    "asm": lambda path, args:
-        run(["yasm", "-gdwarf2", "-felf64", path, f"-l{path.with_suffix('')}"]) and
-        run(["ld", "-g", "-o", path.with_suffix(""), path.with_suffix(".o")]) and
-        run([path.with_suffix("")] + args)
+    "asm": lambda path, args: (
+        run(["yasm", "-gdwarf2", "-felf64", path, f"-l{path.with_suffix('')}"])
+        and run(["ld", "-g", "-o", path.with_suffix(""), path.with_suffix(".o")])
+        and run([path.with_suffix("")] + args)
+    ),
 }
 
 

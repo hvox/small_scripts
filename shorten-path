@@ -17,6 +17,7 @@ Options:
     --verbose
         Raise verbosity level.
 """
+
 import sys
 from contextlib import suppress
 from pathlib import Path
@@ -44,7 +45,7 @@ def shorten(path: Path, max_length: int):
         parts[i] = part[0]
         if length <= max_length:
             return "/".join([root] + parts)
-    suffix = "/".join(parts[max(0, len(parts) - ((max_length - len(root) - 1) // 2)):])
+    suffix = "/".join(parts[max(0, len(parts) - ((max_length - len(root) - 1) // 2)) :])
     return root + "/" * min(3, max_length - len(suffix) - len(root)) + suffix
 
 

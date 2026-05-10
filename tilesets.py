@@ -55,7 +55,12 @@ class Tileset(metaclass=TilesetMetaclass):
         cols, rows = len(self.order[0]), len(self.order)
         w, h, tiles = self
         image = PIL.Image.new(mode="RGBA", size=(w * cols, h * rows))
-        for x, y, tile in ((x, y, t) for y, row in enumerate(self.order) for x, t in enumerate(row) if t >= 0):
+        for x, y, tile in (
+            (x, y, t)
+            for y, row in enumerate(self.order)
+            for x, t in enumerate(row)
+            if t >= 0
+        ):
             for j, pixel in enumerate(self.tiles[tile].pixels):
                 pixel_x = x * w + j % w
                 pixel_y = y * h - j // w + h - 1
@@ -85,7 +90,7 @@ class Tileset(metaclass=TilesetMetaclass):
 
 def lists(hex: str) -> list[list[int]]:
     rows = hex.replace(" ", "").replace("\n", "").split(":")
-    lsts = [[int(row[i: i + 2], 16) for i in range(0, len(row), 2)] for row in rows]
+    lsts = [[int(row[i : i + 2], 16) for i in range(0, len(row), 2)] for row in rows]
     return lsts
 
 
@@ -115,7 +120,9 @@ class MiniblobTileset(Tileset):
                     for t3 in list(sorted(MiniblobTileset))
                     if t1 | t2 | t3 == tile
                 ]
-                parts = max(parts, key=(lambda p: tuple((bin(x).count("1"), -x) for x in p)))
+                parts = max(
+                    parts, key=(lambda p: tuple((bin(x).count("1"), -x) for x in p))
+                )
                 tiles[tile] = reduce(Tile.blend, [tiles[tile] for tile in parts])
         return BlobTileset(self.w, self.h, tiles)
 
@@ -179,7 +186,10 @@ class Tile(NamedTuple):
 
     def blend(self: Tile, other: Tile):
         assert self.width == other.width and self.height == other.height
-        pixels = [blend_rgba(color1, color2) for color1, color2 in zip(self.pixels, other.pixels)]
+        pixels = [
+            blend_rgba(color1, color2)
+            for color1, color2 in zip(self.pixels, other.pixels)
+        ]
         return Tile(self.width, self.height, pixels)
 
     def split(self: Tile):
@@ -188,8 +198,17 @@ class Tile(NamedTuple):
         h1 = self.height // 2
         h2 = self.height - h1
         tiles = []
-        for x0, y0, w, h in [(0, 0, w1, h1), (w1, 0, w2, h1), (0, h1, w1, h2), (w1, h1, w2, h2)]:
-            pixels = [self.pixels[x + y * (w1 + w2)] for y in range(y0, y0 + h) for x in range(x0, x0 + w)]
+        for x0, y0, w, h in [
+            (0, 0, w1, h1),
+            (w1, 0, w2, h1),
+            (0, h1, w1, h2),
+            (w1, h1, w2, h2),
+        ]:
+            pixels = [
+                self.pixels[x + y * (w1 + w2)]
+                for y in range(y0, y0 + h)
+                for x in range(x0, x0 + w)
+            ]
             tiles.append(Tile(w, h, pixels))
         return ((tiles[2], tiles[3]), (tiles[0], tiles[1]))
 
@@ -198,7 +217,9 @@ class Tile(NamedTuple):
         pixels = [
             pixel
             for t1, t2 in reversed(tiles)
-            for row1, row2 in zip(chunked(t1.pixels, t1.width), chunked(t2.pixels, t2.width))
+            for row1, row2 in zip(
+                chunked(t1.pixels, t1.width), chunked(t2.pixels, t2.width)
+            )
             for pixel in (row1 + row2)
         ]
         assert all(tile.height != 0 for r in tiles for tile in r)
@@ -261,7 +282,10 @@ def get_order(tileset_path, ordered_path):
     rows //= h
     _, _, tiles = Tile.load(Path(ordered_path), cols, rows)
     order = [
-        [next((i for i, t in tileset.items() if t == tiles[x + y * cols]), -1) for x in range(cols)]
+        [
+            next((i for i, t in tileset.items() if t == tiles[x + y * cols]), -1)
+            for x in range(cols)
+        ]
         for y in range(rows)
     ]
     return order

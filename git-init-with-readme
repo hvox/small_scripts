@@ -8,6 +8,7 @@ Options:
     -h, --help
         Show this screen and exit.
 """
+
 import sys
 from os import system, environ
 from contextlib import suppress

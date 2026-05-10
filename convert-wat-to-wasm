@@ -12,6 +12,7 @@ Options:
     -h, --help
         Show this screen and exit.
 """
+
 # Potential name: Walter
 import sys
 from ast import literal_eval
@@ -53,11 +54,19 @@ def assemble(ast: list) -> bytes:
     wasm.extend(b"\0asm")  # Magic
     wasm.extend((1).to_bytes(4, "little"))  # Version
     section(1, pack([pack_type(t) for t in types]))  # Type section
-    section(2, pack([pack_import(imp, funcs, types) for imp in imports.items()]))  # Import section
+    section(
+        2, pack([pack_import(imp, funcs, types) for imp in imports.items()])
+    )  # Import section
     funcs = {f: body for f, body in funcs.items() if f not in imports}
-    section(3, pack([bytes([types.index(t)]) for t, _ in funcs.values()]))  # Function section
-    section(7, pack([pack_export(exp, funcs, types) for exp in exports.items()]))  # Export section
-    section(10, pack([pack_func(f, imports, funcs, types) for f in funcs.values()]))  # Code section
+    section(
+        3, pack([bytes([types.index(t)]) for t, _ in funcs.values()])
+    )  # Function section
+    section(
+        7, pack([pack_export(exp, funcs, types) for exp in exports.items()])
+    )  # Export section
+    section(
+        10, pack([pack_func(f, imports, funcs, types) for f in funcs.values()])
+    )  # Code section
     return wasm
 
 
@@ -85,7 +94,7 @@ def parse(source: str) -> list:
             j, i = i, i + 1
             while i < len(source) and source[i] != '"':
                 i += 1
-            node.append(source[j + 1: i])
+            node.append(source[j + 1 : i])
             i += 1
         else:
             error(f"unexpected character: {source[i]}")
@@ -101,21 +110,27 @@ def pack(elements: list[bytes]) -> bytes:
     return bytes([len(elements)]) + b"".join(elements)
 
 
-def pack_func(f: tuple[tuple, list], imps: dict[str], funcs: dict[str], types: list[tuple]) -> bytes:
+def pack_func(
+    f: tuple[tuple, list], imps: dict[str], funcs: dict[str], types: list[tuple]
+) -> bytes:
     typ, body = f
     binary = bytearray(b"\0")
     for instr in body:
         op, *args = instr
         if op == "call":
             f = args[0]
-            i = (len(imps) + list(funcs).index(f)) if f in funcs else list(imps).index(f)
+            i = (
+                (len(imps) + list(funcs).index(f))
+                if f in funcs
+                else list(imps).index(f)
+            )
             binary.extend([0x10, i])
         elif op == "i32.const":
             binary.extend(bytes([0x41]) + pack_i32(args[0]))
         else:
             error(f"unsupported instruction {instr}")
-    binary += b"\x0B"
-    return pack([binary[i: i + 1] for i in range(len(binary))])
+    binary += b"\x0b"
+    return pack([binary[i : i + 1] for i in range(len(binary))])
 
 
 def pack_i32(number: int) -> bytes:

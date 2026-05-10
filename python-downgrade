@@ -12,6 +12,7 @@ Arguments:
     SOURCE      Original script to be downgraded.
     TARGET      Destination of generated script
 """
+
 import sys
 from pathlib import Path
 from typing import Any, Callable
@@ -59,7 +60,7 @@ def fstring_to_exp(fstring: str) -> str:
         j = string.index("{", i)
         result.append(f'"{string[i:j]}"')
         i = string.index("}", j) + 1
-        code = string[j + 1: i - 1]
+        code = string[j + 1 : i - 1]
         if code.endswith("!s"):
             code = f"str({code[:-2]})"
         elif code.endswith("!r"):
@@ -81,11 +82,13 @@ def main(script_name: str, *script_args: str):
     lines = Path(args["SOURCE"]).read_text().strip("\n").split("\n")
     insertion_position = int(lines[0].startswith("#!/"))
     if any(x.strip().startswith("from pathlib import Path") for x in lines):
-        lines = [x for x in lines if not x.strip().startswith("from pathlib import Path")]
+        lines = [
+            x for x in lines if not x.strip().startswith("from pathlib import Path")
+        ]
         lines[insertion_position:insertion_position] = PATH_SOURCE.split("\n")
     for k, line in enumerate(lines):
         if (i := line.find('f"')) != -1 and (j := line.index('"', i + 2)) != -1:
-            line = line[:i] + fstring_to_exp(line[i: j + 1]) + line[j + 1:]
+            line = line[:i] + fstring_to_exp(line[i : j + 1]) + line[j + 1 :]
             lines[k] = line
 
     Path(args["TARGET"]).write_text("".join(line + "\n" for line in lines))

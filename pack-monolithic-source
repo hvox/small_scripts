@@ -14,6 +14,7 @@ Options:
     --verbose
         Raise verbosity level.
 """
+
 import sys
 import ast
 import os
@@ -29,14 +30,21 @@ def pack(monolith_path: Path):
     lines_iter = iter(enumerate(lines))
     dirs_to_be_removed = set()
     for i, line in lines_iter:
-        if not line.strip() or line.startswith("#") or line.startswith("import ") or line.startswith("from "):
+        if (
+            not line.strip()
+            or line.startswith("#")
+            or line.startswith("import ")
+            or line.startswith("from ")
+        ):
             continue
         if line == '"""' or line == "'''":
             next(end_line for _, end_line in lines_iter if line == end_line)
             continue
         if not (FILE_IMPORT_INFIX in line and line.endswith(FILE_IMPORT_SUFFIX)):
             break
-        variable, path = line.removesuffix(FILE_IMPORT_SUFFIX).split(FILE_IMPORT_INFIX, 1)
+        variable, path = line.removesuffix(FILE_IMPORT_SUFFIX).split(
+            FILE_IMPORT_INFIX, 1
+        )
         try:
             path = Path(str(monolith_path) + ast.literal_eval(path))
             source = path.read_text()
