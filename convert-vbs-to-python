@@ -1,0 +1,197 @@
+#!/bin/env python3
+import locale
+import sys
+from collections.abc import Generator, Iterable
+from pathlib import Path
+from typing import Self
+
+
+def main(args: list[str]) -> None:
+    assert args[1:]
+    for arg in args[1:]:
+        process_path(Path(arg))
+
+
+def process_path(path: Path) -> None:
+    print(">", path)
+    assert path.suffix == ".vbs"
+    vbs_code = read_text(path)
+    lines = list(translate_vbs_tokens_to_pyhon_lines(tokenise_vbs(vbs_code)))
+    python_source = "".join(line + "\n" for line in lines)
+    path.with_suffix(".py").write_text(python_source, encoding="utf8")
+
+
+def read_text(path: Path) -> str:
+    data = path.read_bytes()
+    try:
+        text = data.decode("utf8")
+    except UnicodeDecodeError:
+        text = data.decode(encoding=locale.getpreferredencoding())
+    return text.replace("\r\n", "\n")
+
+
+IDENTIFIER_CHARS = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_"
+
+
+def tokenise_vbs(source: str) -> Generator[str]:
+    chars = PeekableChars(source)
+    for char in chars:
+        if char in " \t\r":
+            whitespace = char
+            while (char := chars.peek()) and char in " \t\r":
+                whitespace += next(chars)
+            yield whitespace
+        elif char in IDENTIFIER_CHARS:
+            identifier = char
+            while (char := chars.peek()) and char in IDENTIFIER_CHARS:
+                identifier += next(chars)
+            yield identifier
+        elif char == "<" and chars.peek() == ">":
+            yield char + next(chars)
+        elif char == ":" and chars.peek() == " ":
+            yield char + next(chars)
+        elif char == "'":
+            comment = char
+            while (char := chars.peek()) and char != "\n":
+                comment += next(chars)
+            yield comment
+        elif char == '"':
+            literal = char
+            while (char := chars.peek()) and char != '"':
+                literal += next(chars)
+            if chars.peek() == '"':
+                literal += next(chars)
+            yield literal
+        else:
+            yield char
+
+
+class PeekableChars:
+    chars: str
+    index: int
+
+    def __init__(self, chars: Iterable[str]) -> None:
+        self.chars = chars if isinstance(chars, str) else "".join(chars)
+        self.index = 0
+
+    def __iter__(self) -> Self:
+        return self
+
+    def __next__(self) -> str:
+        try:
+            value = self.chars[self.index]
+            self.index += 1
+        except IndexError as exception:
+            raise StopIteration from exception
+        return value
+
+    def peek(self) -> str | None:
+        try:
+            return self.chars[self.index]
+        except IndexError:
+            return None
+
+
+def translate_vbs_to_py(vbs_code: str) -> Generator[str]:
+    yield from translate_vbs_tokens_to_pyhon_lines(tokenise_vbs(vbs_code))
+
+
+def translate_vbs_tokens_to_pyhon_lines(tokens: Iterable[str]) -> Generator[str]:
+    for line in split_vbs_tokens_into_lines(tokens):
+        indent = line.pop(0) if line and not line[0].strip() else ""
+        py_stmt = indent + translate_stmt(line)
+        yield py_stmt
+
+
+def translate_stmt(stmt: list[str]) -> str:
+    comment = stmt.pop()[1:] if stmt and stmt[-1].startswith("'") else ""
+    while stmt and not stmt[-1].strip():
+        stmt.pop()
+    match stmt:
+        case "Set" | "Const", " ", variable, " ", "=", " ", *expr:
+            line = translate_name(variable) + " = " + translate_expr(expr)
+        case variable, " ", "=", " ", *expr:
+            line = translate_name(variable) + " = " + translate_expr(expr)
+        case "If", " ", *expr, " ", "Then":
+            line = "if " + translate_expr(expr) + ":"
+        case "ElseIf", " ", *expr, " ", "Then":
+            line = "elif " + translate_expr(expr) + ":"
+        case ("Else",):
+            line = "else:"
+        case "For", " ", variable, " ", "=", " ", start, " ", "To", " ", end:
+            variable = translate_name(variable)
+            start = translate_name(start)
+            end = translate_name(end)
+            line = f"for " + variable + f" in range(" + start + ", 1+" + end + "):"
+        case "Dim", " ", variable:
+            line = translate_name(variable) + ": object"
+        case "Sub", " ", name:
+            line = f"def {translate_name(name)}() -> None:"
+        case "End", " ", "Sub" | "If":
+            line = "# end " + stmt[-1].lower()
+        case ("Next",):
+            line = "# continue"
+        case "Call", " ", name:
+            line = translate_name(name) + "()"
+        case "Call", " ", *expr:
+            line = "_ = " + translate_expr(expr)
+        case []:
+            line = ""
+        case _:
+            line = "pass # TODO: " + translate_expr(stmt)
+    if comment:
+        line += " " * (len(line) > 0) + f"#{comment}"
+    return line
+
+
+def translate_expr(tokens: list[str]) -> str:
+    return "".join(
+        (
+            translate_name(token)
+            if all(ch in IDENTIFIER_CHARS for ch in token)
+            else OPERATORS[token] if token in OPERATORS else token
+        )
+        for token in tokens
+    )
+
+
+CONSTANTS = {"Nothing": "None"}
+OPERATORS = {"=": "==", "&": "+"}
+
+
+def translate_name(name: str) -> str:
+    if name in CONSTANTS:
+        return CONSTANTS[name]
+    return snakecase(name)
+
+
+def split_vbs_tokens_into_lines(tokens: Iterable[str]) -> Iterable[list[str]]:
+    line: list[str] = []
+    for token in tokens:
+        if token in (": ", "\n"):
+            yield line.copy()
+            if token == ": ":
+                print(line, line and line[0].isspace())
+                line = [line[0]]
+            else:
+                line = []
+            continue
+        line.append(token)
+    if line:
+        yield line
+
+
+def snakecase(name: str) -> str:
+    if not any(char.islower() for char in name):
+        return name
+    words: list[str] = []
+    for char in name:
+        if char.isupper() or not words:
+            words.append(char.lower())
+        else:
+            words[-1] += char
+    return "_".join(words)
+
+
+if __name__ == "__main__":
+    main(sys.argv)
